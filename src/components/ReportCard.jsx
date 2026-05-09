@@ -34,7 +34,7 @@ export default function ReportCard({ report, showZone = false }) {
   };
 
   return (
-    <div className="card hover:border-sky-200 transition-all hover:shadow-md relative group/card">
+    <div className="card hover:border-sky-200 transition-all hover:shadow-md relative group/card overflow-hidden">
       {userRole === 'admin' && !editing && (
         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
           <button
@@ -54,7 +54,7 @@ export default function ReportCard({ report, showZone = false }) {
         </div>
       )}
 
-      <div className="flex gap-3 p-4">
+      <div className="flex gap-3 p-3 sm:p-4 min-w-0">
         <VoteButton report={report} />
 
         <div className="flex-1 min-w-0">

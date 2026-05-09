@@ -19,6 +19,7 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
   background-color: var(--color-sky-50);
+  overflow-x: hidden;
 }
 
 /* ─── Layout ───────────────────────────────────────────────────── */
@@ -116,6 +117,6 @@ body {
 
   /* ─── Meta row (author · time · comments) ────────────────────── */
   .meta-row {
-    @apply flex items-center gap-4 text-xs text-gray-400;
+    @apply flex items-center gap-3 text-xs text-gray-400 flex-wrap;
   }
 }
