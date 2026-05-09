@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ────────────────────────────────────────────── */
+@theme {
+  --color-sky-50:  #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-200: #bae6fd;
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+  --color-sky-800: #075985;
+  --color-sky-900: #0c4a6e;
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-sky-50);
+}
+
+/* ─── Layout ───────────────────────────────────────────────────── */
+@layer components {
+  .page-layout {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6;
+  }
+
+  /* ─── Cards ──────────────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-xl border border-sky-100;
+  }
+
+  .card-lg {
+    @apply bg-white rounded-2xl border border-sky-100;
+  }
+
+  .card-interactive {
+    @apply bg-white rounded-xl border border-sky-100 hover:border-sky-300 transition-all hover:shadow-lg;
+  }
+
+  /* ─── Buttons ────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply flex items-center gap-2 px-4 py-2.5 bg-sky-500 text-white rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors cursor-pointer whitespace-nowrap;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2.5 border border-sky-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-sky-50 transition-colors cursor-pointer;
+  }
+
+  .btn-filter {
+    @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer bg-white border border-sky-200 text-gray-600 hover:bg-sky-50;
+  }
+
+  .btn-filter-active {
+    @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer bg-sky-500 text-white;
+  }
+
+  /* ─── Badges ─────────────────────────────────────────────────── */
+  .badge {
+    @apply px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-urgent {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200;
+  }
+
+  /* ─── Forms ──────────────────────────────────────────────────── */
+  .form-input {
+    @apply w-full px-3 py-2 border border-sky-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-400;
+  }
+
+  .form-input-search {
+    @apply w-full px-3 py-2 pl-9 border border-sky-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-400;
+  }
+
+  .form-textarea {
+    @apply w-full px-3 py-2 border border-sky-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none;
+  }
+
+  .form-select {
+    @apply w-full px-3 py-2 border border-sky-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white;
+  }
+
+  /* ─── Navigation ─────────────────────────────────────────────── */
+  .nav-link {
+    @apply px-4 py-2 rounded-lg text-sm font-medium no-underline transition-colors text-gray-600 hover:bg-sky-50 hover:text-sky-600;
+  }
+
+  .nav-link-active {
+    @apply px-4 py-2 rounded-lg text-sm font-medium no-underline bg-sky-100 text-sky-700;
+  }
+
+  .nav-link-mobile {
+    @apply block px-6 py-3 text-sm font-medium no-underline text-gray-600;
+  }
+
+  .nav-link-mobile-active {
+    @apply block px-6 py-3 text-sm font-medium no-underline bg-sky-50 text-sky-700;
+  }
+
+  .back-link {
+    @apply inline-flex items-center gap-1 text-sm text-sky-500 hover:text-sky-600 no-underline;
+  }
+
+  /* ─── Typography ─────────────────────────────────────────────── */
+  .section-heading {
+    @apply text-lg font-bold text-gray-900 flex items-center gap-2;
+  }
+
+  /* ─── Page header icon ───────────────────────────────────────── */
+  .page-header-icon {
+    @apply bg-sky-100 rounded-xl p-3;
+  }
+
+  /* ─── Meta row (author · time · comments) ────────────────────── */
+  .meta-row {
+    @apply flex items-center gap-4 text-xs text-gray-400;
+  }
+}
