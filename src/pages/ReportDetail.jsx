@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useApp } from '../context/AppContext';
+import { useNearZone } from '../hooks/useNearZone';
 import { categories, riskColors } from '../data/mockData';
 import VoteButton from '../components/VoteButton';
 
@@ -44,6 +45,9 @@ export default function ReportDetail() {
   }
 
   const zone = getZone(report.zoneId);
+  const zoneRadius = zone?.radiusKm ?? 5;
+  const { status: geoStatus } = useNearZone(zone?.coordinates ?? [-33.01, -71.55], zoneRadius);
+  const canVote = geoStatus === 'near' || geoStatus === 'unavailable';
   const category = categories.find(c => c.id === report.category);
   const risk = zone ? riskColors[zone.riskLevel] : null;
   const isEnrolled = enrolledReports.has(report.id);
@@ -77,7 +81,7 @@ export default function ReportDetail() {
 
       <div className="card-lg p-5 sm:p-8">
         <div className="flex gap-4">
-          <VoteButton report={report} />
+          <VoteButton report={report} disabled={!canVote} />
 
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2 flex-wrap">

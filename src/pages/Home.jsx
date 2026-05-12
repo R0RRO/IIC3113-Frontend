@@ -1,15 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, TrendingUp, Users, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ReportCard from '../components/ReportCard';
 import ZoneCard from '../components/ZoneCard';
 
-export default function Home() {
-  const { zones, reports } = useApp();
-  const [tab, setTab] = useState('reports');
+function haversineKm([lat1, lon1], [lat2, lon2]) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-  const topReports = reports.filter(r => !r.completed).sort((a, b) => b.votes - a.votes).slice(0, 5);
+export default function Home() {
+  const { zones, reports, getZone } = useApp();
+  const [tab, setTab] = useState('reports');
+  const [userCoords, setUserCoords] = useState(null);
+  const [geoAvailable, setGeoAvailable] = useState(false);
+
+  useEffect(() => {
+    if (!navigator.geolocation) { setGeoAvailable(true); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setUserCoords([pos.coords.latitude, pos.coords.longitude]); setGeoAvailable(true); },
+      () => setGeoAvailable(true),
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  }, []);
+
+  const canVoteReport = useCallback((report) => {
+    if (!geoAvailable) return false;
+    if (!userCoords) return true; // geo unavailable/denied → allow
+    const zone = getZone(report.zoneId);
+    if (!zone) return false;
+    const dist = haversineKm(userCoords, zone.coordinates);
+    return dist <= (zone.radiusKm ?? 5);
+  }, [userCoords, geoAvailable, getZone]);
+
+  const urgentReportsList = reports.filter(r => !r.completed && r.urgent).sort((a, b) => b.votes - a.votes).slice(0, 5);
   const criticalZones = zones.filter(z => z.riskLevel === 'critical' || z.riskLevel === 'high');
   const totalVolunteers = zones.reduce((sum, z) => sum + z.volunteers, 0);
   const urgentReports = reports.filter(r => r.urgent).length;
@@ -29,7 +61,7 @@ export default function Home() {
         </div>
         <p className="text-sky-100 max-w-2xl text-xs sm:text-base hidden sm:block">
           Reporta necesidades, vota por prioridades y ayuda a coordinar voluntarios
-          en zonas de emergencia. Tu voto determina qué se atiende primero.
+          en tu zona de emergencia. Tu voto determina qué se atiende primero.
         </p>
       </div>
 
@@ -55,7 +87,7 @@ export default function Home() {
           onClick={() => setTab('reports')}
           className={`flex-1 py-2.5 text-sm font-medium transition-colors cursor-pointer ${tab === 'reports' ? 'text-sky-600 border-b-2 border-sky-500' : 'text-gray-400 hover:text-gray-600'}`}
         >
-          <TrendingUp className="w-4 h-4 inline mr-1.5" />Reportes
+          <AlertTriangle className="w-4 h-4 inline mr-1.5" />Reportes urgentes
         </button>
         <button
           onClick={() => setTab('zones')}
@@ -70,16 +102,16 @@ export default function Home() {
         <div className={`lg:col-span-2 space-y-3 ${tab === 'zones' ? 'hidden lg:block' : ''}`}>
           <div className="hidden lg:flex items-center justify-between">
             <h2 className="section-heading">
-              <TrendingUp className="w-5 h-5 text-sky-500" />
-              Reportes con más prioridad
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              Reportes urgentes
             </h2>
             <Link to="/zones" className="text-sm text-sky-500 hover:text-sky-600 no-underline">
               Ver todas las zonas
             </Link>
           </div>
           <div className="space-y-3">
-            {topReports.map(report => (
-              <ReportCard key={report.id} report={report} showZone />
+            {urgentReportsList.map(report => (
+              <ReportCard key={report.id} report={report} showZone voteDisabled={!canVoteReport(report)} />
             ))}
           </div>
         </div>

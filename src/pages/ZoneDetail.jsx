@@ -158,7 +158,7 @@ export default function ZoneDetail() {
 
       <div className="space-y-3">
         {filteredReports.map(report => (
-          <ReportCard key={report.id} report={report} />
+          <ReportCard key={report.id} report={report} voteDisabled={!canPost} />
         ))}
         {filteredReports.length === 0 && (
           <div className="text-center py-12 text-gray-400">

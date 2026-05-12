@@ -1,15 +1,16 @@
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-export default function VoteButton({ report }) {
+export default function VoteButton({ report, disabled = false }) {
   const { vote, userVotes } = useApp();
   const currentVote = userVotes[report.id] || 0;
 
   return (
-    <div className="flex flex-col items-center gap-0.5 min-w-[48px]">
+    <div className={`flex flex-col items-center gap-0.5 min-w-[48px] ${disabled ? 'opacity-40' : ''}`}>
       <button
-        onClick={() => vote(report.id, 1)}
-        className={`p-1 rounded-md transition-colors cursor-pointer ${
+        onClick={() => !disabled && vote(report.id, 1)}
+        disabled={disabled}
+        className={`p-1 rounded-md transition-colors ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${
           currentVote === 1
             ? 'bg-sky-500 text-white'
             : 'text-gray-400 hover:bg-sky-100 hover:text-sky-600'
@@ -23,8 +24,9 @@ export default function VoteButton({ report }) {
         {report.votes}
       </span>
       <button
-        onClick={() => vote(report.id, -1)}
-        className={`p-1 rounded-md transition-colors cursor-pointer ${
+        onClick={() => !disabled && vote(report.id, -1)}
+        disabled={disabled}
+        className={`p-1 rounded-md transition-colors ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${
           currentVote === -1
             ? 'bg-red-500 text-white'
             : 'text-gray-400 hover:bg-red-100 hover:text-red-500'

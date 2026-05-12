@@ -13,7 +13,7 @@ function timeAgo(dateStr) {
   return `hace ${Math.floor(hours / 24)}d`;
 }
 
-export default function ReportCard({ report, showZone = false }) {
+export default function ReportCard({ report, showZone = false, voteDisabled = false }) {
   const category = categories.find(c => c.id === report.category);
   const { userRole, enrolledReports, enrollReport, deleteReport, updateReport, userCompletions, voteComplete, unvoteComplete } = useApp();
   const isEnrolled = enrolledReports.has(report.id);
@@ -55,7 +55,7 @@ export default function ReportCard({ report, showZone = false }) {
       )}
 
       <div className="flex gap-3 p-3 sm:p-4 min-w-0">
-        <VoteButton report={report} />
+        <VoteButton report={report} disabled={voteDisabled} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2 flex-wrap mb-1">
