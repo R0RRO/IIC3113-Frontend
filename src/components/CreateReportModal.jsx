@@ -34,12 +34,12 @@ const pinIcon = L.divIcon({
   iconAnchor: [11, 11],
 });
 
-function ClickHandler({ zoneCenter, onPlace }) {
+function ClickHandler({ zoneCenter, radiusKm, onPlace }) {
   useMapEvents({
     click(e) {
       const clicked = [e.latlng.lat, e.latlng.lng];
       const dist = haversineKm(zoneCenter, clicked);
-      if (dist <= ZONE_RADIUS_KM) {
+      if (dist <= radiusKm) {
         onPlace(clicked);
       }
     },
@@ -47,7 +47,7 @@ function ClickHandler({ zoneCenter, onPlace }) {
   return null;
 }
 
-export default function CreateReportModal({ zoneId, onClose, zoneCoordinates }) {
+export default function CreateReportModal({ zoneId, onClose, zoneCoordinates, zoneRadiusKm }) {
   const { addReport, userRole, enrollReport } = useApp();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -55,6 +55,7 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates }) 
   const [urgent, setUrgent] = useState(false);
   const [volunteersNeeded, setVolunteersNeeded] = useState(0);
   const [pinCoords, setPinCoords] = useState(null);
+  const [pinError, setPinError] = useState(false);
   const [userCoords, setUserCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState('loading');
 
@@ -77,6 +78,8 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!pinCoords) { setPinError(true); return; }
+    setPinError(false);
     if (!title.trim() || !description.trim()) return;
     const newId = addReport({ zoneId, title, description, category, urgent, coordinates: pinCoords, volunteersNeeded: Number(volunteersNeeded), enrolledCount: 0 });
     if (userRole === 'voluntario' && Number(volunteersNeeded) > 0) {
@@ -164,9 +167,9 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates }) 
           {/* Map pin selector */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-sky-500" />
-                Ubicación del incidente
+              <label className={`text-sm font-medium flex items-center gap-1.5 ${pinError ? 'text-red-500' : 'text-gray-700'}`}>
+                <MapPin className={`w-4 h-4 ${pinError ? 'text-red-500' : 'text-sky-500'}`} />
+                Ubicación del incidente {pinError && <span className="text-xs">(obligatorio)</span>}
               </label>
               {geoStatus === 'loading' && (
                 <span className="flex items-center gap-1 text-xs text-gray-400">
@@ -197,11 +200,12 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates }) 
                 />
                 <ClickHandler
                   zoneCenter={zoneCoordinates}
-                  onPlace={setPinCoords}
+                  radiusKm={zoneRadiusKm || ZONE_RADIUS_KM}
+                  onPlace={(c) => { setPinCoords(c); setPinError(false); }}
                 />
                 <Circle
                   center={zoneCoordinates}
-                  radius={ZONE_RADIUS_KM * 1000}
+                  radius={(zoneRadiusKm || ZONE_RADIUS_KM) * 1000}
                   pathOptions={{ color: '#0ea5e9', fillColor: '#0ea5e9', fillOpacity: 0.08, weight: 2, dashArray: '6 4' }}
                 />
                 {pinCoords && (

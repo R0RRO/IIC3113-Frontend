@@ -10,7 +10,7 @@ import CreateReportModal from '../components/CreateReportModal';
 
 const GEO_RADIUS_KM = 5;
 
-function GeoStatusBadge({ status, distanceKm }) {
+function GeoStatusBadge({ status, distanceKm, radiusKm }) {
   if (status === 'loading') return (
     <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
       <Loader2 className="w-3.5 h-3.5 animate-spin" /> Verificando ubicación...
@@ -23,7 +23,7 @@ function GeoStatusBadge({ status, distanceKm }) {
   );
   if (status === 'far') return (
     <span className="inline-flex items-center gap-1.5 text-xs text-orange-500 font-medium">
-      <ShieldAlert className="w-3.5 h-3.5" /> Fuera de zona ({distanceKm} km — límite {GEO_RADIUS_KM} km)
+      <ShieldAlert className="w-3.5 h-3.5" /> Fuera de zona ({distanceKm} km — límite {radiusKm} km)
     </span>
   );
   if (status === 'denied') return (
@@ -43,9 +43,10 @@ export default function ZoneDetail() {
 
   const zone = getZone(zoneId);
   const reports = getZoneReports(zoneId);
+  const zoneRadius = zone?.radiusKm ?? GEO_RADIUS_KM;
   const { status: geoStatus, distanceKm } = useNearZone(
     zone?.coordinates ?? [-33.01, -71.55],
-    GEO_RADIUS_KM
+    zoneRadius
   );
 
   const canPost = geoStatus === 'near' || geoStatus === 'unavailable';
@@ -96,7 +97,7 @@ export default function ZoneDetail() {
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4" /> {reports.length} reportes
                 </span>
-                <GeoStatusBadge status={geoStatus} distanceKm={distanceKm} />
+                <GeoStatusBadge status={geoStatus} distanceKm={distanceKm} radiusKm={zoneRadius} />
               </div>
             </div>
 
@@ -105,7 +106,7 @@ export default function ZoneDetail() {
                 onClick={() => canPost && setShowCreate(true)}
                 disabled={!canPost}
                 title={
-                  geoStatus === 'far'    ? `Debes estar a menos de ${GEO_RADIUS_KM} km` :
+                  geoStatus === 'far'    ? `Debes estar a menos de ${zoneRadius} km` :
                   geoStatus === 'denied' ? 'Permite el acceso a tu ubicación para publicar' :
                   geoStatus === 'loading'? 'Verificando ubicación...' : ''
                 }
@@ -168,7 +169,7 @@ export default function ZoneDetail() {
       </div>
 
       {showCreate && (
-        <CreateReportModal zoneId={zoneId} zoneCoordinates={zone.coordinates} onClose={() => setShowCreate(false)} />
+        <CreateReportModal zoneId={zoneId} zoneCoordinates={zone.coordinates} zoneRadiusKm={zone.radiusKm} onClose={() => setShowCreate(false)} />
       )}
     </div>
   );
