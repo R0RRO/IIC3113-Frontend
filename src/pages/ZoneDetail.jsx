@@ -49,7 +49,7 @@ export default function ZoneDetail() {
     zoneRadius
   );
 
-  const canPost = geoStatus === 'near' || geoStatus === 'unavailable';
+  const canPost = geoStatus === 'near';
 
   const filteredReports = useMemo(() => {
     let result = reports.filter(r => !r.completed);

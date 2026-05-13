@@ -47,7 +47,7 @@ export default function ReportDetail() {
   const zone = getZone(report.zoneId);
   const zoneRadius = zone?.radiusKm ?? 5;
   const { status: geoStatus } = useNearZone(zone?.coordinates ?? [-33.01, -71.55], zoneRadius);
-  const canVote = geoStatus === 'near' || geoStatus === 'unavailable';
+  const canVote = geoStatus === 'near';
   const category = categories.find(c => c.id === report.category);
   const risk = zone ? riskColors[zone.riskLevel] : null;
   const isEnrolled = enrolledReports.has(report.id);
@@ -285,7 +285,7 @@ export default function ReportDetail() {
                     onClick={() => voteComplete(report.id)}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors cursor-pointer"
                   >
-                    <Flag className="w-4 h-4" /> Confirmar completado ({report.completionVotes || 0}/{threshold})
+                    <Flag className="w-4 h-4" /> Completado ({report.completionVotes || 0}/{threshold})
                   </button>
                 )
               )}

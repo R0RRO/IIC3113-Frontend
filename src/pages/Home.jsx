@@ -34,7 +34,7 @@ export default function Home() {
 
   const canVoteReport = useCallback((report) => {
     if (!geoAvailable) return false;
-    if (!userCoords) return true; // geo unavailable/denied → allow
+    if (!userCoords) return false;
     const zone = getZone(report.zoneId);
     if (!zone) return false;
     const dist = haversineKm(userCoords, zone.coordinates);
