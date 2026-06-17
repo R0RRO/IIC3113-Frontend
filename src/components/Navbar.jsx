@@ -1,18 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Menu, X, Home, HardHat, Shield } from 'lucide-react';
+import { MapPin, Menu, X, Home, HardHat, Shield, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import NotificationBell from './NotificationBell';
 
 const ROLE_CONFIG = {
-  vecino:     { label: 'Vecino',     icon: Home,    classes: 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100' },
-  voluntario: { label: 'Voluntario', icon: HardHat, classes: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-  admin:      { label: 'Admin',      icon: Shield,  classes: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' },
+  vecino:     { label: 'Vecino',     icon: Home,    classes: 'bg-sky-50 text-sky-700 border-sky-200' },
+  voluntario: { label: 'Voluntario', icon: HardHat, classes: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  admin:      { label: 'Admin',      icon: Shield,  classes: 'bg-amber-50 text-amber-700 border-amber-200' },
 };
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const { userRole, setUserRole } = useApp();
+  const { user, userRole, logout } = useApp();
 
   const links = [
     { to: '/', label: 'Inicio' },
@@ -23,8 +24,6 @@ export default function Navbar() {
 
   const role = userRole ? ROLE_CONFIG[userRole] : null;
   const RoleIcon = role?.icon;
-
-  const nextRole = { vecino: 'voluntario', voluntario: 'admin', admin: 'vecino' };
 
   return (
     <nav className="bg-white border-b border-sky-100 sticky top-0 z-[1001] shadow-sm">
@@ -50,15 +49,19 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell />
             {role && (
-              <button
-                onClick={() => setUserRole(nextRole[userRole])}
-                title="Cambiar rol"
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border cursor-pointer transition-colors ${role.classes}`}
-              >
-                <RoleIcon className="w-3.5 h-3.5" /> {role.label}
-              </button>
+              <span className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${role.classes}`}>
+                <RoleIcon className="w-3.5 h-3.5" /> {user?.name || role.label}
+              </span>
             )}
+            <button
+              onClick={logout}
+              title="Cerrar sesión"
+              className="hidden sm:flex p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-sky-50"
@@ -82,12 +85,14 @@ export default function Navbar() {
             </Link>
           ))}
           {role && (
-            <button
-              onClick={() => { setUserRole(nextRole[userRole]); setMenuOpen(false); }}
-              className="block w-full text-left px-6 py-3 text-sm font-medium text-gray-500 border-t border-sky-50"
-            >
-              Cambiar a {ROLE_CONFIG[nextRole[userRole]].label}
-            </button>
+            <div className="px-6 py-3 border-t border-sky-50 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-sm font-medium text-gray-600">
+                <RoleIcon className="w-4 h-4" /> {user?.name || role.label}
+              </span>
+              <button onClick={() => { logout(); setMenuOpen(false); }} className="flex items-center gap-1 text-sm text-red-500 cursor-pointer">
+                <LogOut className="w-4 h-4" /> Salir
+              </button>
+            </div>
           )}
         </div>
       )}

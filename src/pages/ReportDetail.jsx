@@ -8,6 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useNearZone } from '../hooks/useNearZone';
 import { categories, riskColors } from '../data/mockData';
 import VoteButton from '../components/VoteButton';
+import Comments from '../components/Comments';
 
 const reportPinIcon = L.divIcon({
   className: '',
@@ -34,7 +35,7 @@ export default function ReportDetail() {
   const [editUrgent, setEditUrgent] = useState(false);
   const [editVolunteers, setEditVolunteers] = useState(0);
 
-  const report = reports.find(r => r.id === parseInt(reportId));
+  const report = reports.find(r => r.id === reportId);
   if (!report) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
@@ -303,24 +304,8 @@ export default function ReportDetail() {
         </div>
       )}
 
-      {/* Comments placeholder */}
-      <div className="card-lg p-5 sm:p-6">
-        <h2 className="section-heading mb-4">
-          <MessageCircle className="w-5 h-5 text-sky-500" />
-          Comentarios ({report.comments})
-        </h2>
-        <div className="space-y-4">
-          <textarea
-            placeholder="Agrega un comentario con información o actualizaciones..."
-            rows={3}
-            className="form-textarea"
-          />
-          <button className="btn-primary">Comentar</button>
-        </div>
-        <div className="mt-6 text-center py-8 text-gray-400 text-sm">
-          Los comentarios se mostrarán aquí cuando se conecte el backend.
-        </div>
-      </div>
+      {/* Comments */}
+      <Comments reportId={report.id} />
     </div>
   );
 }

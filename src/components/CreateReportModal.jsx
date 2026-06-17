@@ -76,16 +76,23 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates, zo
   }, []);
 
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!pinCoords) { setPinError(true); return; }
     setPinError(false);
     if (!title.trim() || !description.trim()) return;
-    const newId = addReport({ zoneId, title, description, category, urgent, coordinates: pinCoords, volunteersNeeded: Number(volunteersNeeded), enrolledCount: 0 });
-    if (userRole === 'voluntario' && Number(volunteersNeeded) > 0) {
-      enrollReport(newId);
+    setSubmitting(true);
+    try {
+      const newId = await addReport({ zoneId, title, description, category, urgent, coordinates: pinCoords, volunteersNeeded: Number(volunteersNeeded), enrolledCount: 0 });
+      if (userRole === 'voluntario' && Number(volunteersNeeded) > 0) {
+        await enrollReport(newId);
+      }
+      onClose();
+    } catch {
+      setSubmitting(false);
     }
-    onClose();
   };
 
   return (
@@ -224,8 +231,8 @@ export default function CreateReportModal({ zoneId, onClose, zoneCoordinates, zo
             <button type="button" onClick={onClose} className="btn-secondary flex-1">
               Cancelar
             </button>
-            <button type="submit" className="btn-primary flex-1 justify-center">
-              Publicar Reporte
+            <button type="submit" disabled={submitting} className="btn-primary flex-1 justify-center disabled:opacity-60">
+              {submitting ? 'Publicando...' : 'Publicar Reporte'}
             </button>
           </div>
         </form>
