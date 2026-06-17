@@ -19,7 +19,7 @@ export default function Navbar() {
     { to: '/', label: 'Inicio' },
     { to: '/zones', label: 'Zonas' },
     { to: '/map', label: 'Mapa' },
-    ...(userRole === 'admin' ? [{ to: '/admin', label: 'Admin' }] : []),
+    ...(userRole === 'admin' ? [{ to: '/admin', label: 'Admin' }, { to: '/admin/users', label: 'Usuarios' }] : []),
   ];
 
   const role = userRole ? ROLE_CONFIG[userRole] : null;
@@ -51,9 +51,13 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <NotificationBell />
             {role && (
-              <span className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${role.classes}`}>
+              <Link
+                to={`/user/${user.id}`}
+                title="Mi perfil"
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border no-underline hover:opacity-80 transition-opacity ${role.classes}`}
+              >
                 <RoleIcon className="w-3.5 h-3.5" /> {user?.name || role.label}
-              </span>
+              </Link>
             )}
             <button
               onClick={logout}
@@ -86,9 +90,9 @@ export default function Navbar() {
           ))}
           {role && (
             <div className="px-6 py-3 border-t border-sky-50 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-sm font-medium text-gray-600">
+              <Link to={`/user/${user.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-1.5 text-sm font-medium text-gray-600 no-underline">
                 <RoleIcon className="w-4 h-4" /> {user?.name || role.label}
-              </span>
+              </Link>
               <button onClick={() => { logout(); setMenuOpen(false); }} className="flex items-center gap-1 text-sm text-red-500 cursor-pointer">
                 <LogOut className="w-4 h-4" /> Salir
               </button>

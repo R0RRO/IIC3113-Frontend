@@ -1,17 +1,16 @@
 import { useState } from 'react';
-import { MapPin, Home, HardHat, Shield, Loader2 } from 'lucide-react';
+import { MapPin, Home, HardHat, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { categories } from '../data/mockData';
 
 const ROLES = [
   { id: 'vecino', label: 'Vecino', icon: Home, desc: 'Reporta necesidades', color: 'sky' },
   { id: 'voluntario', label: 'Voluntario', icon: HardHat, desc: 'Coordina ayuda', color: 'emerald' },
-  { id: 'admin', label: 'Admin', icon: Shield, desc: 'Gestiona zonas', color: 'amber' },
 ];
 
 const RING = {
   sky: 'border-sky-400 bg-sky-50 text-sky-700',
   emerald: 'border-emerald-400 bg-emerald-50 text-emerald-700',
-  amber: 'border-amber-400 bg-amber-50 text-amber-700',
 };
 
 export default function AuthScreen() {
@@ -21,6 +20,8 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('vecino');
+  const [preferredArea, setPreferredArea] = useState('');
+  const [bio, setBio] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -29,8 +30,16 @@ export default function AuthScreen() {
     setError('');
     setLoading(true);
     try {
-      if (mode === 'login') await login(email, password);
-      else await register({ email, password, name, role });
+      if (mode === 'login') {
+        await login(email, password);
+      } else {
+        const payload = { email, password, name, role };
+        if (role === 'voluntario') {
+          if (preferredArea.trim()) payload.preferredArea = preferredArea.trim();
+          if (bio.trim()) payload.bio = bio.trim();
+        }
+        await register(payload);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -83,7 +92,7 @@ export default function AuthScreen() {
           {mode === 'register' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">¿Cómo participas?</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {ROLES.map((r) => {
                   const Icon = r.icon;
                   const active = role === r.id;
@@ -103,6 +112,39 @@ export default function AuthScreen() {
                 })}
               </div>
             </div>
+          )}
+
+          {mode === 'register' && role === 'voluntario' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Área de desempeño <span className="text-gray-400 font-normal">(opcional)</span>
+                </label>
+                <select
+                  value={preferredArea}
+                  onChange={(e) => setPreferredArea(e.target.value)}
+                  className="form-select"
+                >
+                  <option value="">Sin preferencia</option>
+                  {categories.filter((c) => c.id !== 'all' && c.id !== 'volunteers').map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Descripción <span className="text-gray-400 font-normal">(opcional)</span>
+                </label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={2}
+                  className="form-textarea"
+                  placeholder="Tu experiencia, habilidades, disponibilidad..."
+                  maxLength={500}
+                />
+              </div>
+            </>
           )}
 
           {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

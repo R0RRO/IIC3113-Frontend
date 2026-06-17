@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, User, HardHat, Shield, Loader2 } from 'lucide-react';
+import { MessageCircle, User, HardHat, Shield, Loader2, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
+import { useApp } from '../context/AppContext';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -15,11 +16,23 @@ function timeAgo(dateStr) {
 const ROLE_ICON = { voluntario: HardHat, admin: Shield };
 
 export default function Comments({ reportId }) {
+  const { user } = useApp();
   const [comments, setComments] = useState([]);
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState('');
+
+  const remove = async (c) => {
+    const prev = comments;
+    setComments((cs) => cs.filter((x) => x.id !== c.id));
+    try {
+      await api.deleteComment(reportId, c.id);
+    } catch (err) {
+      setComments(prev);
+      alert(err.message);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -87,6 +100,15 @@ export default function Comments({ reportId }) {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold text-gray-900">{c.authorName || 'Anónimo'}</span>
                     <span className="text-xs text-gray-400">{timeAgo(c.createdAt)}</span>
+                    {(user?.role === 'admin' || user?.id === c.authorId) && (
+                      <button
+                        onClick={() => remove(c)}
+                        title="Borrar comentario"
+                        className="ml-auto p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap break-words">{c.body}</p>
                 </div>

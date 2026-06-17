@@ -46,7 +46,15 @@ export const api = {
   login: (email, password) => request('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
   register: (data) => request('/auth/register', { method: 'POST', body: data, auth: false }),
   me: () => request('/auth/me'),
+  updateProfile: (data) => request('/auth/me', { method: 'PATCH', body: data }),
   myState: () => request('/reports/me/state'),
+  setLocation: (lat, lng) => request('/auth/location', { method: 'POST', body: { lat, lng } }),
+  updatePreferences: (prefs) => request('/auth/preferences', { method: 'PATCH', body: prefs }),
+
+  // ---- users / perfiles ----
+  getUser: (id) => request(`/users/${id}`),
+  listUsers: () => request('/users'),
+  suspendUser: (id, suspended) => request(`/users/${id}/suspend`, { method: 'PATCH', body: { suspended } }),
 
   // ---- zones ----
   zones: async () => (await request('/zones', { auth: false })).map(normZone),
@@ -67,9 +75,12 @@ export const api = {
   uncomplete: (id) => request(`/reports/${id}/complete`, { method: 'DELETE' }),
   comments: (id) => request(`/reports/${id}/comments`, { auth: false }),
   addComment: (id, body) => request(`/reports/${id}/comments`, { method: 'POST', body: { body } }),
+  deleteComment: (id, commentId) => request(`/reports/${id}/comments/${commentId}`, { method: 'DELETE' }),
 
   // ---- notifications ----
   notifications: () => request('/notifications'),
   markNotifRead: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
   markAllRead: () => request('/notifications/read-all', { method: 'POST' }),
+  deleteNotif: (id) => request(`/notifications/${id}`, { method: 'DELETE' }),
+  clearNotifs: () => request('/notifications', { method: 'DELETE' }),
 };

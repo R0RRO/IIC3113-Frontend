@@ -9,6 +9,8 @@ import ZoneDetail from './pages/ZoneDetail';
 import MapView from './pages/MapView';
 import ReportDetail from './pages/ReportDetail';
 import AdminPanel from './pages/AdminPanel';
+import AdminUsers from './pages/AdminUsers';
+import Profile from './pages/Profile';
 
 function AppShell() {
   const { user, authReady } = useApp();
@@ -32,7 +34,9 @@ function AppShell() {
         <Route path="/zone/:zoneId" element={<ZoneDetail />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/report/:reportId" element={<ReportDetail />} />
+        <Route path="/user/:userId" element={<Profile />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
       </Routes>
     </div>
   );

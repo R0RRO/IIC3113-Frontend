@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, Settings, X, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import NotificationSettings from './NotificationSettings';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -14,8 +15,9 @@ function timeAgo(dateStr) {
 }
 
 export default function NotificationBell() {
-  const { notifications, unread, markNotifRead, markAllRead } = useApp();
+  const { notifications, unread, markNotifRead, markAllRead, removeNotification, clearNotifications, userRole } = useApp();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function NotificationBell() {
   }, []);
 
   return (
+    <>
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
@@ -43,11 +46,27 @@ export default function NotificationBell() {
         <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-sky-100 overflow-hidden z-[1002]">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-sky-50">
             <span className="font-semibold text-sm text-gray-900">Notificaciones</span>
-            {unread > 0 && (
-              <button onClick={markAllRead} className="text-xs text-sky-500 hover:text-sky-600 flex items-center gap-1 cursor-pointer">
-                <Check className="w-3 h-3" /> Marcar todas
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {unread > 0 && (
+                <button onClick={markAllRead} className="text-xs text-sky-500 hover:text-sky-600 flex items-center gap-1 cursor-pointer">
+                  <Check className="w-3 h-3" /> Marcar todas
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button onClick={clearNotifications} title="Limpiar todas" className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 cursor-pointer">
+                  <Trash2 className="w-3 h-3" /> Limpiar
+                </button>
+              )}
+              {userRole === 'voluntario' && (
+                <button
+                  onClick={() => { setOpen(false); setSettingsOpen(true); }}
+                  title="Preferencias de alertas"
+                  className="p-1 rounded text-gray-400 hover:text-sky-600 hover:bg-sky-50 cursor-pointer"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
@@ -59,8 +78,15 @@ export default function NotificationBell() {
             ) : (
               notifications.map((n) => {
                 const inner = (
-                  <div className={`px-4 py-3 border-b border-sky-50 transition-colors hover:bg-sky-50 ${n.read ? '' : 'bg-sky-50/60'}`}>
-                    <div className="flex items-start gap-2">
+                  <div className={`relative px-4 py-3 border-b border-sky-50 transition-colors hover:bg-sky-50 ${n.read ? '' : 'bg-sky-50/60'}`}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeNotification(n.id); }}
+                      title="Borrar"
+                      className="absolute top-2 right-2 p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="flex items-start gap-2 pr-6">
                       {!n.read && <span className="mt-1.5 w-2 h-2 rounded-full bg-sky-500 shrink-0" />}
                       <div className={n.read ? 'pl-4' : ''}>
                         <p className="text-sm text-gray-700 leading-snug">{n.message}</p>
@@ -83,5 +109,8 @@ export default function NotificationBell() {
         </div>
       )}
     </div>
+
+    {settingsOpen && <NotificationSettings onClose={() => setSettingsOpen(false)} />}
+    </>
   );
 }

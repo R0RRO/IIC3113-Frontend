@@ -73,6 +73,13 @@ export function AppProvider({ children }) {
     })();
   }, []);
 
+  // Manda la ubicacion al backend (para notifs urgentes/normales por cercania)
+  useEffect(() => {
+    if (user && userCoords) {
+      api.setLocation(userCoords[0], userCoords[1]).catch(() => {});
+    }
+  }, [user, userCoords]);
+
   // Cuando hay usuario: carga datos + arranca polling de notificaciones
   useEffect(() => {
     if (!user) return;
@@ -100,6 +107,18 @@ export function AppProvider({ children }) {
   const register = useCallback(async (data) => {
     const { token, user } = await api.register(data);
     setToken(token);
+    setUser(user);
+    return user;
+  }, []);
+
+  const updatePreferences = useCallback(async (prefs) => {
+    const { user } = await api.updatePreferences(prefs);
+    setUser(user);
+    return user;
+  }, []);
+
+  const updateProfile = useCallback(async (data) => {
+    const { user } = await api.updateProfile(data);
     setUser(user);
     return user;
   }, []);
@@ -256,6 +275,21 @@ export function AppProvider({ children }) {
     try { await api.markAllRead(); } catch { /* ignore */ }
   }, []);
 
+  const removeNotification = useCallback(async (id) => {
+    setNotifications((prev) => {
+      const n = prev.find((x) => x.id === id);
+      if (n && !n.read) setUnread((u) => Math.max(0, u - 1));
+      return prev.filter((x) => x.id !== id);
+    });
+    try { await api.deleteNotif(id); } catch { /* ignore */ }
+  }, []);
+
+  const clearNotifications = useCallback(async () => {
+    setNotifications([]);
+    setUnread(0);
+    try { await api.clearNotifs(); } catch { /* ignore */ }
+  }, []);
+
   return (
     <AppContext.Provider value={{
       zones,
@@ -273,6 +307,8 @@ export function AppProvider({ children }) {
       login,
       register,
       logout,
+      updatePreferences,
+      updateProfile,
       vote,
       addReport,
       enrollReport,
@@ -287,6 +323,8 @@ export function AppProvider({ children }) {
       getZone,
       markNotifRead,
       markAllRead,
+      removeNotification,
+      clearNotifications,
     }}>
       {children}
     </AppContext.Provider>

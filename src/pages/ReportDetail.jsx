@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, Clock, MessageCircle, User, AlertTriangle, HardHat, Users, CheckCircle, Trash2, Pencil, X, Flag, MapPin } from 'lucide-react';
+import { ArrowLeft, Clock, MessageCircle, User, AlertTriangle, HardHat, Users, CheckCircle, Trash2, Pencil, X, Flag, MapPin, Loader2 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -27,7 +27,7 @@ function timeAgo(dateStr) {
 
 export default function ReportDetail() {
   const { reportId } = useParams();
-  const { reports, getZone, userRole, enrolledReports, enrollReport, deleteReport, updateReport, userCompletions, voteComplete, unvoteComplete } = useApp();
+  const { reports, getZone, userRole, enrolledReports, enrollReport, deleteReport, updateReport, userCompletions, voteComplete, unvoteComplete, loadingData } = useApp();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -36,7 +36,19 @@ export default function ReportDetail() {
   const [editVolunteers, setEditVolunteers] = useState(0);
 
   const report = reports.find(r => r.id === reportId);
+  const zone = report ? getZone(report.zoneId) : null;
+  const zoneRadius = zone?.radiusKm ?? 5;
+  // Hooks SIEMPRE antes de cualquier return temprano (evita React #310 al refrescar mientras carga)
+  const { status: geoStatus } = useNearZone(zone?.coordinates ?? [-33.01, -71.55], zoneRadius);
+
   if (!report) {
+    if (loadingData) {
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-12 flex justify-center">
+          <Loader2 className="w-6 h-6 text-sky-400 animate-spin" />
+        </div>
+      );
+    }
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
         <p className="text-gray-500">Reporte no encontrado</p>
@@ -45,9 +57,6 @@ export default function ReportDetail() {
     );
   }
 
-  const zone = getZone(report.zoneId);
-  const zoneRadius = zone?.radiusKm ?? 5;
-  const { status: geoStatus } = useNearZone(zone?.coordinates ?? [-33.01, -71.55], zoneRadius);
   const canVote = geoStatus === 'near';
   const category = categories.find(c => c.id === report.category);
   const risk = zone ? riskColors[zone.riskLevel] : null;
@@ -80,6 +89,12 @@ export default function ReportDetail() {
         )}
       </div>
 
+      {report.completed && (
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 text-sm font-medium">
+          <CheckCircle className="w-5 h-5" /> Este reporte fue marcado como resuelto por los voluntarios.
+        </div>
+      )}
+
       <div className="card-lg p-5 sm:p-8">
         <div className="flex gap-4">
           <VoteButton report={report} disabled={!canVote} />
@@ -105,6 +120,11 @@ export default function ReportDetail() {
                   {zone.name}
                 </Link>
               )}
+              {report.completed && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  <CheckCircle className="w-3 h-3" /> Resuelto
+                </span>
+              )}
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{report.title}</h1>
@@ -112,7 +132,9 @@ export default function ReportDetail() {
             <div className="meta-row text-sm">
               <span className="flex items-center gap-1">
                 <User className="w-4 h-4" />
-                {report.author}
+                {report.authorId ? (
+                  <Link to={`/user/${report.authorId}`} className="hover:text-sky-600 no-underline font-medium">{report.author}</Link>
+                ) : report.author}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
@@ -255,7 +277,11 @@ export default function ReportDetail() {
             />
           </div>
 
-          {userRole === 'voluntario' ? (
+          {report.completed ? (
+            <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-200">
+              <CheckCircle className="w-4 h-4" /> Tarea resuelta — inscripciones cerradas
+            </div>
+          ) : userRole === 'voluntario' ? (
             <div className="space-y-2">
               <button
                 onClick={() => enrollReport(report.id)}

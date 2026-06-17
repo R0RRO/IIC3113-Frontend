@@ -136,7 +136,11 @@ export default function ReportCard({ report, showZone = false, voteDisabled = fa
 
           <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
             <div className="meta-row">
-              <span>{report.author}</span>
+              {report.authorId ? (
+                <Link to={`/user/${report.authorId}`} onClick={(e) => e.stopPropagation()} className="hover:text-sky-600 no-underline font-medium">{report.author}</Link>
+              ) : (
+                <span>{report.author}</span>
+              )}
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" /> {timeAgo(report.createdAt)}
               </span>
